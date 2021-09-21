@@ -186,8 +186,12 @@ JWKOperationsRegistry = {'sign': 'Compute digital Signature or MAC',
 JWKpycaCurveMap = {'secp256r1': 'P-256',
                    'secp384r1': 'P-384',
                    'secp521r1': 'P-521',
-                   'secp256k1': 'secp256k1'}
+                   'secp256k1': 'secp256k1',
+                   'P-256K': 'P-256K'}
 
+ARG_ALTERNAMES = {
+    'secp256k1': ['secp256k1', 'P-256K']
+}
 
 class InvalidJWKType(JWException):
     """Invalid JWK Type Exception.
@@ -442,6 +446,7 @@ class JWK(dict):
         curve = 'P-256'
         if 'curve' in params:
             curve = params.pop('curve')
+            params['curve_name'] = curve
         # 'curve' is for backwards compat, if 'crv' is defined it takes
         # precedence
         if 'crv' in params:
@@ -455,7 +460,7 @@ class JWK(dict):
         key_size = pn.public_numbers.curve.key_size
         params.update(
             kty='EC',
-            crv=JWKpycaCurveMap[key.curve.name],
+            crv=JWKpycaCurveMap.get(params.get('curve_name'), JWKpycaCurveMap[key.curve.name]),
             x=self._encode_int(pn.public_numbers.x, key_size),
             y=self._encode_int(pn.public_numbers.y, key_size),
             d=self._encode_int(pn.private_value, key_size)
@@ -467,7 +472,7 @@ class JWK(dict):
         key_size = pn.curve.key_size
         params.update(
             kty='EC',
-            crv=JWKpycaCurveMap[key.curve.name],
+            crv=JWKpycaCurveMap.get(params.get('curve_name'), JWKpycaCurveMap[key.curve.name]),
             x=self._encode_int(pn.x, key_size),
             y=self._encode_int(pn.y, key_size),
         )
